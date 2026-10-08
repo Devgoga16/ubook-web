@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#243352" />
+    <title>uBook · Tu negocio. Tus reservas.</title>
+    <meta name="description" content="Reservas online, agenda, recordatorios por WhatsApp, adelantos con Yape y Plin, fichas de clientes y reportes para negocios que atienden con cita." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="uBook" />
+    <meta property="og:title" content="uBook · Tu negocio. Tus reservas." />
+    <meta property="og:description" content="Reservas online 24/7, recordatorios por WhatsApp, adelantos con Yape y Plin, y tu agenda en orden. Prueba 30 días gratis." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:locale" content="es_PE" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Aplica el tema antes de pintar para evitar parpadeo.
+      try {
+        var t = localStorage.getItem('ubook-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

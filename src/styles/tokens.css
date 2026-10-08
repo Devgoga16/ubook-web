@@ -1,0 +1,139 @@
+/*
+ * Tokens de diseño de uBook. Paleta "Medianoche": azul noche + ámbar.
+ *
+ * - `--teal*` es el color de ACENTO (hoy ámbar). Se mantiene el nombre para no
+ *   tocar cada pantalla: teal = rellenos, bordes y foco; teal-ink = texto.
+ * - `--on-teal`: texto o íconos sobre un relleno de acento (el ámbar es claro).
+ * - Todos los pares de texto cumplen WCAG AA (4.5:1), en claro y oscuro.
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #f6f7fa;
+  --surface: #ffffff;
+  --surface-2: #f3f5f8;
+  --ink: #1b2338;
+  --ink-2: #465069;
+  --muted: #626b84;
+  --line: #eaedf2;
+  --line-strong: #d6dbe6;
+
+  --brand: #243352;
+  --brand-soft: #ebeef5;
+  --teal: #f2a93b;
+  --teal-ink: #8f5400;
+  --teal-soft: #fdf3e1;
+  --teal-line: #f2cc8b;
+  --on-teal: #1c2742;
+  --grad: linear-gradient(160deg, #34497a 0%, #2a3a63 48%, #1c2742 100%);
+  /* Texto con degradado (titulares): de azul noche a bronce, legible sobre fondo claro. */
+  --grad-text: linear-gradient(100deg, #243352 15%, #9a5a06 95%);
+  --on-grad: #ffffff;
+
+  /* Logo: "u" ámbar + "Book" azul noche (claro) o casi blanco (oscuro). */
+  --logo-accent: #f4b550;
+  --logo-ink: #293453;
+
+  --ok: #287346;
+  --ok-bg: #e6f4ec;
+  --warn: #a04a1a;
+  --warn-bg: #fcede3;
+  --bad: #a8435a;
+  --bad-bg: #f9e8ec;
+  --info: #243352;
+  --info-bg: #e9ecf4;
+  --off: #5f6779;
+  --off-bg: #eff1f5;
+  --done: #535c74;
+  --done-bg: #eceef3;
+
+  --overlay: rgb(14 20 36 / 0.42);
+  --shadow: 0 1px 2px rgb(28 39 66 / 0.04), 0 8px 24px rgb(28 39 66 / 0.07);
+  --shadow-pop: 0 20px 60px rgb(0 0 0 / 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: #0d1322;
+    --surface: #151d31;
+    --surface-2: #1d263d;
+    --ink: #e9edf6;
+    --ink-2: #bcc5da;
+    --muted: #8e98b3;
+    --line: #232c44;
+    --line-strong: #323d5a;
+
+    --brand: #a9b8de;
+    --brand-soft: #232e4a;
+    --teal: #f4b24e;
+    --teal-ink: #f7c578;
+    --teal-soft: #3a2c12;
+    --teal-line: #7a5a22;
+    --on-teal: #1c2742;
+    --grad: linear-gradient(160deg, #3b5490 0%, #2e4372 48%, #22305a 100%);
+    --grad-text: linear-gradient(100deg, #e9edf6 10%, #f4b24e 90%);
+    --logo-ink: #e9edf6;
+    --logo-ring: rgb(255 255 255 / 0.3);
+
+    --ok: #7fd3a1;
+    --ok-bg: #16342a;
+    --warn: #f2a98a;
+    --warn-bg: #3b2219;
+    --bad: #f2909f;
+    --bad-bg: #3e1e2b;
+    --info: #a9b8de;
+    --info-bg: #232e4a;
+    --off: #a4abbf;
+    --off-bg: #242b3f;
+    --done: #b3bbd0;
+    --done-bg: #262e44;
+
+    --overlay: rgb(4 7 15 / 0.6);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+    --shadow-pop: 0 20px 60px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0d1322;
+  --surface: #151d31;
+  --surface-2: #1d263d;
+  --ink: #e9edf6;
+  --ink-2: #bcc5da;
+  --muted: #8e98b3;
+  --line: #232c44;
+  --line-strong: #323d5a;
+
+  --brand: #a9b8de;
+  --brand-soft: #232e4a;
+  --teal: #f4b24e;
+  --teal-ink: #f7c578;
+  --teal-soft: #3a2c12;
+  --teal-line: #7a5a22;
+  --on-teal: #1c2742;
+  --grad: linear-gradient(160deg, #3b5490 0%, #2e4372 48%, #22305a 100%);
+  --grad-text: linear-gradient(100deg, #e9edf6 10%, #f4b24e 90%);
+  --logo-ink: #e9edf6;
+  --logo-ring: rgb(255 255 255 / 0.3);
+
+  --ok: #7fd3a1;
+  --ok-bg: #16342a;
+  --warn: #f2a98a;
+  --warn-bg: #3b2219;
+  --bad: #f2909f;
+  --bad-bg: #3e1e2b;
+  --info: #a9b8de;
+  --info-bg: #232e4a;
+  --off: #a4abbf;
+  --off-bg: #242b3f;
+  --done: #b3bbd0;
+  --done-bg: #262e44;
+
+  --overlay: rgb(4 7 15 / 0.6);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 20px 60px rgb(0 0 0 / 0.6);
+}

@@ -1,0 +1,256 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/montserrat';
+@import './styles/tokens.css';
+
+/* `dark:` sigue al sistema salvo que el usuario elija tema (data-theme). */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+  &:where([data-theme='dark'] *) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --font-sans: 'Montserrat Variable', 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-teal: var(--teal);
+  --color-teal-ink: var(--teal-ink);
+  --color-teal-soft: var(--teal-soft);
+  --color-teal-line: var(--teal-line);
+  --color-on-teal: var(--on-teal);
+  --color-logo-accent: var(--logo-accent);
+  --color-logo-ink: var(--logo-ink);
+  --color-on-grad: var(--on-grad);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-off: var(--off);
+  --color-off-bg: var(--off-bg);
+  --color-done: var(--done);
+  --color-done-bg: var(--done-bg);
+  --color-overlay: var(--overlay);
+
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-pop);
+}
+
+@theme {
+  /* Escala del prototipo, con mínimo de 11px. */
+  --text-*: initial;
+  --text-2xs: 11px;
+  --text-xs: 11.5px;
+  --text-sm: 12px;
+  --text-body: 12.5px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 22px;
+  --text-3xl: 30px;
+
+  --radius-control: 8px;
+  --radius-tile: 10px;
+  --radius-card: 14px;
+  --radius-panel: 16px;
+
+  --breakpoint-nav: 860px;
+}
+
+@utility bg-grad {
+  background-image: var(--grad);
+  color: var(--on-grad);
+}
+
+/* Scrollbar que solo aparece al pasar el mouse (menú lateral). */
+@utility scroll-reveal {
+  scrollbar-gutter: stable;
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover::-webkit-scrollbar-thumb,
+  &:focus-within::-webkit-scrollbar-thumb {
+    background-color: var(--line-strong);
+  }
+  @supports (-moz-appearance: none) {
+    scrollbar-color: transparent transparent;
+    &:hover,
+    &:focus-within {
+      scrollbar-color: var(--line-strong) transparent;
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  /*
+   * Scrollbar fina y redondeada. Chromium/Safari usan ::-webkit-scrollbar
+   * (que ignoran si se definen las propiedades estándar), Firefox usa las estándar.
+   */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--line-strong);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted);
+  }
+  @supports (-moz-appearance: none) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+/* ── Landing ─────────────────────────────────────────────── */
+
+@utility text-grad {
+  background-image: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Halo de color detrás de las secciones destacadas. */
+@utility glow {
+  background:
+    radial-gradient(40% 50% at 20% 20%, color-mix(in oklab, var(--teal) 28%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 85% 30%, color-mix(in oklab, var(--brand) 26%, transparent), transparent 70%);
+}
+
+/* Cuadrícula tenue de fondo. */
+@utility grid-lines {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--line-strong) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--line-strong) 55%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(70% 60% at 50% 30%, #000 40%, transparent 100%);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@utility animate-marquee {
+  animation: marquee 38s linear infinite;
+}
+
+@utility animate-pop {
+  animation: pop-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Aparece al entrar en pantalla (ver features/landing/use-reveal.ts). */
+@layer components {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
