@@ -113,7 +113,12 @@ export interface StaffAccess {
 
 export interface Me {
   user: User
-  context: { ctx: AuthContextType; organizationId: string | null }
+  context: {
+    ctx: AuthContextType
+    organizationId: string | null
+    /** Agente de Unify Tec viendo el negocio en solo lectura. */
+    supportView?: boolean
+  }
   organizations: OrganizationSummary[]
   organization?: Organization
   access?: StaffAccess
@@ -334,6 +339,9 @@ export interface Client {
   notes?: string
   tags: string[]
   createdAt?: string
+  /** Responsable de este cliente (si está a cargo de otro). */
+  guardianId?: string | null
+  relationship?: string
 }
 
 export interface ClientInput {
@@ -499,6 +507,8 @@ export type DepositStatus = 'pending_review' | 'approved' | 'rejected'
 export interface PublicBusiness {
   name: string
   slug: string
+  /** El negocio ofrece portal del cliente ("Mis citas"). */
+  portal?: boolean
   logoUrl: string | null
   businessType: string | null
   rules: {

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api/client'
 
-export type NotificationType = 'booking_created' | 'booking_pending' | 'deposit_submitted' | 'booking_cancelled' | 'booking_rescheduled' | 'waitlist_joined'
+export type NotificationType = 'booking_created' | 'booking_pending' | 'deposit_submitted' | 'booking_cancelled' | 'booking_rescheduled' | 'waitlist_joined' | 'client_inquiry'
 
 export interface AppNotification {
   id: string

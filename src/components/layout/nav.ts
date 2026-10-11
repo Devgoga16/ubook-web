@@ -8,20 +8,26 @@ import {
   Globe,
   House,
   Layers,
+  LifeBuoy,
   ListTodo,
+  MessagesSquare,
   Palette,
-  Scissors,
+  ConciergeBell,
   SlidersHorizontal,
   Store,
   Tag,
   User,
   UserCog,
   Users,
+  UsersRound,
   Clock,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
+import type { User as ApiUser } from '@/lib/api/types'
 import type { Requirement } from '@/lib/auth/access'
+
+export type PlatformRole = NonNullable<ApiUser['platformRole']>
 
 export interface NavItem {
   path: string
@@ -37,6 +43,8 @@ export interface NavItem {
   requires?: Requirement
   /** Solo para el equipo de plataforma (Unify Tec). */
   platform?: boolean
+  /** Dentro de plataforma, solo estos roles (sin definir = todo el equipo). */
+  platformRoles?: PlatformRole[]
 }
 
 export interface NavGroup {
@@ -62,12 +70,13 @@ export const NAV: NavGroup[] = [
     label: 'Clientes',
     items: [
       { path: '/clientes', label: 'Clientes', icon: Users, crumb: 'Clientes', requires: { permission: 'client.read' }, ready: true },
+      { path: '/consultas', label: 'Consultas', icon: MessagesSquare, crumb: 'Clientes / Consultas', requires: { permission: 'client.read', feature: 'client_portal' }, ready: true },
     ],
   },
   {
     label: 'Catálogo',
     items: [
-      { path: '/servicios', label: 'Servicios', icon: Scissors, crumb: 'Catálogo / Servicios', requires: { permission: 'service.read' }, ready: true },
+      { path: '/servicios', label: 'Servicios', icon: ConciergeBell, crumb: 'Catálogo / Servicios', requires: { permission: 'service.read' }, ready: true },
       { path: '/profesionales', label: 'Profesionales', icon: User, crumb: 'Catálogo / Profesionales', requires: { permission: 'professional.read' }, ready: true },
       { path: '/recursos', label: 'Recursos', icon: Box, crumb: 'Catálogo / Recursos', requires: { permission: 'resource.read', feature: 'resources' }, ready: true },
       { path: '/sucursales', label: 'Sucursales', icon: Store, crumb: 'Catálogo / Sucursales', requires: { permission: 'branch.manage' }, ready: true },
@@ -89,13 +98,16 @@ export const NAV: NavGroup[] = [
       { path: '/disponibilidad', label: 'Disponibilidad', icon: Clock, crumb: 'Ajustes / Disponibilidad', requires: { permission: 'organization.manage' }, ready: true },
       { path: '/equipo', label: 'Equipo', icon: UserCog, crumb: 'Ajustes / Equipo', requires: { permission: 'member.read' }, ready: true },
       { path: '/configuracion', label: 'Configuración', icon: SlidersHorizontal, crumb: 'Ajustes / Configuración', requires: { permission: 'organization.manage' }, ready: true },
+      { path: '/soporte', label: 'Ayuda y soporte', icon: LifeBuoy, crumb: 'Ayuda / Soporte', ready: true },
     ],
   },
   {
     label: 'Plataforma',
     items: [
       { path: '/superadmin', label: 'Negocios', icon: Building2, crumb: 'Unify Tec / Superadmin', platform: true, ready: true },
-      { path: '/superadmin/planes', label: 'Planes', icon: Layers, crumb: 'Unify Tec / Planes', platform: true, ready: true },
+      { path: '/superadmin/soporte', label: 'Soporte', icon: LifeBuoy, crumb: 'Unify Tec / Soporte', platform: true, ready: true },
+      { path: '/superadmin/planes', label: 'Planes', icon: Layers, crumb: 'Unify Tec / Planes', platform: true, platformRoles: ['super_admin'], ready: true },
+      { path: '/superadmin/equipo', label: 'Equipo', icon: UsersRound, crumb: 'Unify Tec / Equipo', platform: true, platformRoles: ['super_admin'], ready: true },
       { path: '/design', label: 'Sistema de diseño', icon: Palette, crumb: 'Desarrollo / Sistema de diseño', ready: true, devOnly: true },
     ],
   },
@@ -104,15 +116,20 @@ export const NAV: NavGroup[] = [
 export const NAV_ITEMS = NAV.flatMap((g) => g.items).filter((i) => !i.devOnly || import.meta.env.DEV)
 
 /** Menú visible para la sesión actual. */
-export function visibleNav(ctx: 'staff' | 'platform', allowed: (req: Requirement) => boolean): NavGroup[] {
+export function visibleNav(ctx: 'staff' | 'platform', allowed: (req: Requirement) => boolean, platformRole?: PlatformRole | null): NavGroup[] {
   return NAV.map((group) => ({
     ...group,
     items: group.items.filter((item) => {
       if (item.devOnly) return import.meta.env.DEV
-      if (ctx === 'platform') return !!item.platform
+      if (ctx === 'platform') return !!item.platform && allowedForRole(item, platformRole)
       return !item.platform && allowed(item.requires ?? {})
     }),
   })).filter((group) => group.items.length > 0)
+}
+
+/** ¿El rol de plataforma puede ver esta pantalla? */
+export function allowedForRole(item: NavItem, platformRole?: PlatformRole | null): boolean {
+  return !item.platformRoles || (!!platformRole && item.platformRoles.includes(platformRole))
 }
 
 /** Ítem exacto o, en rutas hijas (/profesionales/123), el padre más cercano. */

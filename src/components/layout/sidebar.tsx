@@ -7,9 +7,10 @@ import { useBranch } from '@/lib/auth/branch-context'
 import { cn } from '@/lib/cn'
 import { OrgLogo } from '@/components/ui/org-logo'
 import { Logo } from '@/components/brand/logo'
+import { useSupportBadges } from '@/features/support/api'
 import { findNavItem, visibleNav, type NavItem } from './nav'
 
-function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+function NavEntry({ item, badge, onNavigate }: { item: NavItem; badge?: number; onNavigate?: () => void }) {
   const Icon = item.icon
   // Activo también en sus páginas hijas (/profesionales/123).
   const isActive = findNavItem(useLocation().pathname)?.path === item.path
@@ -32,6 +33,11 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
         <Icon size={14} strokeWidth={1.8} aria-hidden />
       </span>
       {item.label}
+      {!!badge && (
+        <span className="ml-auto rounded-full bg-warn-bg px-1.5 text-2xs font-bold text-warn" aria-label={`${badge} sin leer`}>
+          {badge}
+        </span>
+      )}
     </Link>
   )
 }
@@ -79,7 +85,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { me } = useAuth()
   const navigate = useNavigate()
   const isPlatform = me?.context.ctx === 'platform'
-  const groups = visibleNav(isPlatform ? 'platform' : 'staff', (req) => meets(me, req))
+  const supportView = !!me?.context.supportView
+  const groups = visibleNav(isPlatform ? 'platform' : 'staff', (req) => meets(me, req), me?.user.platformRole)
+  const badges = useSupportBadges()
   const orgName = isPlatform ? 'Unify Tec' : (me?.organization?.name ?? '')
 
   return (
@@ -96,7 +104,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         />
         <div className="text-center text-base font-semibold">{orgName}</div>
         {isPlatform ? (
-          <span className="rounded-full border border-line px-2.5 py-[3px] text-2xs text-muted">Panel de plataforma</span>
+          <span className="rounded-full border border-line px-2.5 py-[3px] text-2xs text-muted">{me?.user.platformRole === 'support' ? 'Equipo de soporte' : 'Panel de plataforma'}</span>
         ) : (
           <BranchSwitcher />
         )}
@@ -107,13 +115,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <div key={group.label} className="flex flex-col gap-px">
             <div className="px-2 py-1 text-2xs font-bold tracking-[.1em] text-muted uppercase">{group.label}</div>
             {group.items.map((item) => (
-              <NavEntry key={item.path} item={item} onNavigate={onNavigate} />
+              <NavEntry key={item.path} item={item} badge={badges[item.path]} onNavigate={onNavigate} />
             ))}
           </div>
         ))}
       </nav>
 
-      {!isPlatform && (
+      {!isPlatform && !supportView && (
         <div className="mt-auto flex rounded-panel border-[1.5px] border-dashed border-line-strong p-2.5">
           <button
             type="button"

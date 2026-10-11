@@ -1,6 +1,6 @@
-import { CalendarPlus, CheckCircle2, Clock, Hourglass, MapPin, Pencil, Store, Users } from 'lucide-react'
+import { CalendarPlus, CheckCircle2, Clock, Hourglass, MapPin, Pencil, Store, UserRound, Users } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -16,6 +16,7 @@ import { formatLongDate, formatTime, isoToZoned } from '@/lib/time'
 import { DEPOSIT_METHOD_LABEL, businessSource, depositAmount, googleCalendarUrl, priceFrom, uploadDepositProof, useBusiness, useCreateBooking } from './api'
 import { DateTimeChooser } from './date-time-chooser'
 import { JoinWaitlist } from './join-waitlist'
+import { fullName, portalSession, usePortalAccount } from '@/features/portal/api'
 import { PublicLayout } from './public-layout'
 
 type Step = 'branch' | 'service' | 'professional' | 'time' | 'details'
@@ -58,7 +59,7 @@ function OptionButton({ onClick, children, className }: { onClick: () => void; c
   )
 }
 
-function Success({ business, booking, token, onAnother }: { business: PublicBusiness; booking: PublicBookingView; token: string; onAnother: () => void }) {
+function Success({ business, booking, token, onAnother, accountUrl }: { business: PublicBusiness; booking: PublicBookingView; token: string; onAnother: () => void; accountUrl?: string }) {
   const pending = booking.status === 'pending'
   return (
     <Card className="flex flex-col items-center gap-4 px-6 py-8 text-center">
@@ -93,7 +94,13 @@ function Success({ business, booking, token, onAnother }: { business: PublicBusi
           Ver o cambiar mi reserva
         </Link>
       </div>
-      <p className="m-0 text-2xs text-muted">Guarda el enlace "Ver o cambiar mi reserva" para cancelar o reprogramar.</p>
+      {accountUrl ? (
+        <Link to={accountUrl} className="text-sm font-semibold text-brand hover:underline">
+          Volver a mi cuenta
+        </Link>
+      ) : (
+        <p className="m-0 text-2xs text-muted">Guarda el enlace "Ver o cambiar mi reserva" para cancelar o reprogramar.</p>
+      )}
       <button type="button" onClick={onAnother} className="cursor-pointer text-sm font-semibold text-brand hover:underline">
         Reservar otra cita
       </button>
@@ -171,12 +178,19 @@ function DepositStep({
 /** /reservar/:slug — página pública para que el cliente reserve sin cuenta. */
 export function BookingPage() {
   const { slug = '' } = useParams<{ slug: string }>()
+  // "Reservar de nuevo" desde el portal llega con sede, servicio, profesional y persona ya elegidos.
+  const [query] = useSearchParams()
   const business = useBusiness(slug)
   const create = useCreateBooking(slug)
+  // Con sesión en el portal se reserva para alguien conocido, sin volver a escribir datos.
+  const [portalToken] = useState(() => portalSession.get(slug)?.token ?? null)
+  const account = usePortalAccount(slug, portalToken).data
+  const [forId, setForId] = useState<string | null>(query.get('para'))
+  const forClient = account ? (account.profiles.find((p) => p.id === forId) ?? account.profiles.find((p) => p.isHolder) ?? null) : null
 
-  const [branchId, setBranchId] = useState<string | null>(null)
-  const [serviceId, setServiceId] = useState<string | null>(null)
-  const [professionalId, setProfessionalId] = useState<string | null>(null) // 'any' = cualquiera
+  const [branchId, setBranchId] = useState<string | null>(query.get('sede'))
+  const [serviceId, setServiceId] = useState<string | null>(query.get('servicio'))
+  const [professionalId, setProfessionalId] = useState<string | null>(query.get('profesional')) // 'any' = cualquiera
   const [startsAt, setStartsAt] = useState<string | null>(null)
   const [editing, setEditing] = useState<Step | null>(null)
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '', notes: '', acceptsTerms: false, marketingConsent: false })
@@ -197,7 +211,9 @@ export function BookingPage() {
     [b, branch, service],
   )
   const onlyPro = pros.length === 1 ? pros[0]!.id : null
-  const chosenPro = professionalId ?? onlyPro
+  // Un profesional del enlace que ya no atiende ese servicio se ignora.
+  const validPro = professionalId === 'any' || pros.some((p) => p.id === professionalId) ? professionalId : null
+  const chosenPro = validPro ?? onlyPro
   const pro = pros.find((p) => p.id === chosenPro)
 
   const step: Step = editing ?? (!branch ? 'branch' : !service ? 'service' : !chosenPro ? 'professional' : !startsAt ? 'time' : 'details')
@@ -240,10 +256,12 @@ export function BookingPage() {
     e.preventDefault()
     setError(null)
     const next: Record<string, string> = {}
-    if (!form.firstName.trim()) next.firstName = 'Escribe tu nombre'
-    if (!form.lastName.trim()) next.lastName = 'Escribe tu apellido'
-    if (!/^9\d{8}$/.test(form.phone.replace(/\s/g, ''))) next.phone = 'Celular de 9 dígitos que empiece con 9'
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = 'Correo inválido'
+    if (!forClient) {
+      if (!form.firstName.trim()) next.firstName = 'Escribe tu nombre'
+      if (!form.lastName.trim()) next.lastName = 'Escribe tu apellido'
+      if (!/^9\d{8}$/.test(form.phone.replace(/\s/g, ''))) next.phone = 'Celular de 9 dígitos que empiece con 9'
+      if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = 'Correo inválido'
+    }
     if (!form.acceptsTerms) next.acceptsTerms = 'Necesitamos tu autorización para agendar'
     if (depositDue) {
       if (!deposit.method) next.depositMethod = 'Elige cómo pagaste'
@@ -257,7 +275,9 @@ export function BookingPage() {
         serviceId: service.id,
         professionalId: chosenPro === 'any' ? undefined : (chosenPro ?? undefined),
         startsAt,
-        client: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), phone: form.phone.replace(/\s/g, ''), email: form.email.trim() || undefined },
+        ...(forClient
+          ? { forClientId: forClient.id, portalToken }
+          : { client: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), phone: form.phone.replace(/\s/g, ''), email: form.email.trim() || undefined } }),
         notes: form.notes.trim() || undefined,
         acceptsTerms: true,
         marketingConsent: form.marketingConsent,
@@ -297,6 +317,7 @@ export function BookingPage() {
           business={b}
           booking={result.booking}
           token={result.token}
+          accountUrl={account ? `/reservar/${slug}/mi-cuenta` : undefined}
           onAnother={() => {
             setResult(null)
             setServiceId(null)
@@ -309,6 +330,11 @@ export function BookingPage() {
 
   return (
     <PublicLayout title={b.name} subtitle={subtitle} logoUrl={b.logoUrl}>
+      {b.portal && (
+        <Link to={`/reservar/${slug}/mi-cuenta`} className="-mb-1 inline-flex items-center gap-1.5 self-end rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-2 no-underline shadow-card hover:text-ink">
+          <UserRound size={13} aria-hidden /> {account ? `Mi cuenta · ${account.profiles.find((p) => p.isHolder)?.firstName ?? ''}` : 'Ya soy cliente: entrar a mi cuenta'}
+        </Link>
+      )}
       {error && step !== 'details' && (
         <div role="alert" className="rounded-control bg-warn-bg px-4 py-3 text-sm font-semibold text-warn">
           {error}
@@ -448,13 +474,41 @@ export function BookingPage() {
       {step === 'details' && service && (
         <Card>
           <form noValidate onSubmit={submit} className="flex flex-col gap-3.5">
-            <h2 className="m-0 text-md font-bold">Tus datos</h2>
+            <h2 className="m-0 text-md font-bold">{forClient ? '¿Para quién es la cita?' : 'Tus datos'}</h2>
             {error && (
               <div role="alert" className="rounded-control bg-bad-bg px-3 py-2 text-sm font-semibold text-bad">
                 {error}
               </div>
             )}
-            <div className="grid gap-3 sm:grid-cols-2">
+            {forClient && account && (
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Para quién es la cita">
+                  {account.profiles.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={p.id === forClient.id}
+                      onClick={() => setForId(p.id)}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-2 rounded-full border py-1.5 pr-3.5 pl-1.5 text-sm font-semibold',
+                        p.id === forClient.id ? 'border-teal bg-teal-soft text-teal-ink' : 'border-line-strong bg-surface text-ink-2 hover:border-teal',
+                      )}
+                    >
+                      <Avatar name={fullName(p)} size="xs" round /> {p.isHolder ? `${p.firstName} (yo)` : p.firstName}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-2xs text-muted">
+                  ¿Es para alguien más?{' '}
+                  <Link to={`/reservar/${slug}/mi-cuenta?tab=familia`} className="font-semibold text-brand hover:underline">
+                    Agrégalo a tu familia
+                  </Link>
+                  .
+                </span>
+              </div>
+            )}
+            <div className={cn('grid gap-3 sm:grid-cols-2', forClient && 'hidden')}>
               <Field label="Nombre" error={errors.firstName}>
                 {(p) => <Input {...p} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} autoComplete="given-name" autoFocus />}
               </Field>

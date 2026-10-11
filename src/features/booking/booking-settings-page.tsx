@@ -97,9 +97,12 @@ export function BookingSettingsPage() {
   const services = useServices()
   const professionals = useProfessionals()
   const [copied, setCopied] = useState(false)
+  const [copiedPortal, setCopiedPortal] = useState(false)
+  const { hasFeature } = useAccess()
 
   const slug = me?.organization?.slug ?? ''
   const url = `${window.location.origin}/reservar/${slug}`
+  const portalUrl = `${url}/mi-cuenta`
   const online = (services.data ?? []).filter((s) => !s.isArchived && s.onlineBooking)
   const ready = (professionals.data ?? []).filter(
     (p) => p.isActive && summarizeSchedule(p.schedules).days > 0 && p.services.some((x) => online.some((s) => s.id === x.serviceId)),
@@ -110,6 +113,12 @@ export function BookingSettingsPage() {
     await navigator.clipboard?.writeText(url).catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const copyPortal = async () => {
+    await navigator.clipboard?.writeText(portalUrl).catch(() => {})
+    setCopiedPortal(true)
+    setTimeout(() => setCopiedPortal(false), 2000)
   }
 
   return (
@@ -144,6 +153,39 @@ export function BookingSettingsPage() {
           </a>
         </div>
       </Card>
+
+      {hasFeature('client_portal') ? (
+        <Card className="flex flex-col gap-4">
+          <CardHeader title="Portal de tus clientes" className="mb-0" />
+          <p className="m-0 text-sm text-muted">
+            Aquí tus clientes entran con su celular y un código por WhatsApp para ver sus citas, reservar para su familia y revisar sus pagos. También llegan desde el botón "Ya soy cliente" de tu página de reservas.
+          </p>
+          <div className="flex gap-2">
+            <Input readOnly value={portalUrl} aria-label="Enlace del portal de clientes" onFocus={(e) => e.target.select()} />
+            <Button onClick={copyPortal}>
+              {copiedPortal ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />} {copiedPortal ? 'Copiado' : 'Copiar'}
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <a href={portalUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-control bg-grad px-3.5 py-2 text-sm font-semibold">
+              <ExternalLink size={14} aria-hidden /> Ver el portal
+            </a>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Mira y gestiona tus citas en ${me?.organization?.name ?? 'nuestro negocio'}: ${portalUrl}`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-control border border-line-strong bg-surface px-3.5 py-2 text-sm font-semibold text-ink-2 hover:border-teal"
+            >
+              <MessageCircle size={14} aria-hidden /> Compartir por WhatsApp
+            </a>
+          </div>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader title="Portal de tus clientes" />
+          <p className="m-0 text-sm text-muted">Tu plan no incluye el portal del cliente. Con él, tus clientes ven y gestionan sus citas, reservan para su familia y revisan sus pagos desde su celular.</p>
+        </Card>
+      )}
 
       <Card>
         <CardHeader title="Para recibir reservas" />

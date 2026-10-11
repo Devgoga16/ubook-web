@@ -31,6 +31,7 @@ export function useAccess() {
     hasFeature: (feature: FeatureKey) => hasFeature(me, feature),
     meets: (req: Requirement) => meets(me, req),
     isOwner: me?.access?.isOwner ?? false,
-    readOnly: me?.subscription?.readOnly ?? false,
+    // En la vista de soporte tampoco se puede modificar nada.
+    readOnly: (me?.subscription?.readOnly ?? false) || !!me?.context.supportView,
   }
 }

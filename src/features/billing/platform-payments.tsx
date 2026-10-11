@@ -9,10 +9,13 @@ import { Modal } from '@/components/ui/overlays'
 import { formatDate } from '@/features/clients/api'
 import { ProofImage } from '@/features/payments/proof-image'
 import { errorMessage } from '@/lib/api/client'
+import { useAuth } from '@/lib/auth/auth-context'
 import { BILLING_METHODS, money, usePlatformPayments, usePlatformReview, type SubscriptionPayment } from './api'
 
 export function PaymentRow({ p }: { p: SubscriptionPayment }) {
   const { approve, reject } = usePlatformReview()
+  // Soporte consulta los pagos; solo el super admin los aprueba o rechaza.
+  const canReview = useAuth().me?.user.platformRole === 'super_admin'
   const [rejecting, setRejecting] = useState(false)
   const [showProof, setShowProof] = useState(false)
   const [reason, setReason] = useState('')
@@ -45,7 +48,7 @@ export function PaymentRow({ p }: { p: SubscriptionPayment }) {
         ) : (
           <span className="text-2xs text-muted">Sin foto</span>
         )}
-        {p.status === 'pending' && !rejecting && (
+        {p.status === 'pending' && !rejecting && canReview && (
           <div className="flex gap-2">
             <Button size="sm" variant="primary" disabled={approve.isPending} onClick={() => window.confirm(`¿Confirmar el pago de ${p.organization?.name}? Se activará su plan.`) && void run(() => approve.mutateAsync(p.id))}>
               <Check size={13} aria-hidden /> Aprobar

@@ -1,4 +1,4 @@
-import { Clock, Scissors } from 'lucide-react'
+import { Clock, ConciergeBell } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Pill } from '@/components/ui/badges'
@@ -46,7 +46,7 @@ export function ServicesForm({
   if (services.length === 0) {
     return (
       <EmptyState
-        icon={Scissors}
+        icon={ConciergeBell}
         title="Aún no hay servicios en el catálogo"
         description="Crea tus servicios y luego elige cuáles realiza cada profesional."
         action={

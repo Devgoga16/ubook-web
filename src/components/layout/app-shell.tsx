@@ -1,9 +1,11 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { useQuery } from '@tanstack/react-query'
 import { Calendar, CalendarPlus, Clock, Lock, UserPlus } from 'lucide-react'
-import { useDeferredValue, useState } from 'react'
+import { useDeferredValue, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { formatPhone } from '@/features/clients/api'
+import { lastVisited } from '@/features/support/api'
+import { SupportViewBanner } from '@/features/support/support-view'
 import { api } from '@/lib/api/client'
 import type { Client } from '@/lib/api/types'
 import { meets } from '@/lib/auth/access'
@@ -82,6 +84,7 @@ function Shell() {
   const navigate = useNavigate()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => lastVisited.remember(pathname), [pathname])
 
   const current = findNavItem(pathname)
   const isPlatform = me?.context.ctx === 'platform'
@@ -129,7 +132,7 @@ function Shell() {
             ? [{ id: 'today', group: 'Acciones', label: 'Ir a la agenda de hoy', icon: Calendar, onSelect: () => navigate('/agenda') }]
             : []),
         ]),
-    ...visibleNav(isPlatform ? 'platform' : 'staff', allowed)
+    ...visibleNav(isPlatform ? 'platform' : 'staff', allowed, me?.user.platformRole)
       .flatMap((g) => g.items)
       .map((item) => ({
         id: `go:${item.path}`,
@@ -166,7 +169,7 @@ function Shell() {
             onOpenSearch={() => setPaletteOpen(true)}
             onOpenMenu={() => setMenuOpen(true)}
           />
-          <SubscriptionNotice />
+          {me?.context.supportView ? <SupportViewBanner /> : <SubscriptionNotice />}
           <section className="flex min-w-0 flex-col gap-5">
             <Outlet />
           </section>

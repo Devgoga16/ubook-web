@@ -1,4 +1,4 @@
-import { Bell, BellOff, CalendarCheck, CalendarClock, CalendarX, Hourglass, ListTodo, Receipt, type LucideIcon } from 'lucide-react'
+import { Bell, BellOff, CalendarCheck, CalendarClock, CalendarX, Hourglass, ListTodo, MessagesSquare, Receipt, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button, IconButton } from '@/components/ui/button'
@@ -17,6 +17,7 @@ const META: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   booking_rescheduled: { icon: CalendarClock, tone: 'bg-info-bg text-info' },
   booking_cancelled: { icon: CalendarX, tone: 'bg-bad-bg text-bad' },
   waitlist_joined: { icon: ListTodo, tone: 'bg-brand-soft text-brand' },
+  client_inquiry: { icon: MessagesSquare, tone: 'bg-info-bg text-info' },
 }
 
 const rtf = new Intl.RelativeTimeFormat('es-PE', { numeric: 'auto' })
@@ -48,7 +49,7 @@ export function NotificationsPanel() {
 
   const go = (n: AppNotification) => {
     setOpen(false)
-    navigate(n.type === 'waitlist_joined' ? '/lista-espera' : n.appointmentId ? `/agenda/citas/${n.appointmentId}` : '/agenda')
+    navigate(n.type === 'client_inquiry' ? '/consultas' : n.type === 'waitlist_joined' ? '/lista-espera' : n.appointmentId ? `/agenda/citas/${n.appointmentId}` : '/agenda')
   }
 
   return (

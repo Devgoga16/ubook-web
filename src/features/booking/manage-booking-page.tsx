@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarPlus, CalendarX2, Clock, MapPin, Phone, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeft, CalendarClock, CalendarPlus, CalendarX2, Clock, MapPin, Phone, TriangleAlert, Users } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { StatusChip } from '@/components/ui/badges'
@@ -9,6 +9,7 @@ import { Field, Textarea } from '@/components/ui/field'
 import { ApiError, errorMessage } from '@/lib/api/client'
 import { formatCents } from '@/lib/format'
 import { formatLongDate, formatTime, isoToZoned } from '@/lib/time'
+import { portalSession } from '@/features/portal/api'
 import { bookingSource, googleCalendarUrl, useManageActions, useManagedBooking } from './api'
 import { DateTimeChooser } from './date-time-chooser'
 import { PublicLayout } from './public-layout'
@@ -76,6 +77,11 @@ export function ManageBookingPage() {
 
   return (
     <PublicLayout title={b.organization.name} subtitle={`Cita #UB-${b.number}`} logoUrl={b.organization.logoUrl}>
+      {portalSession.get(b.organization.slug) && (
+        <Link to={`/reservar/${b.organization.slug}/mi-cuenta?tab=citas`} className="-mb-1 inline-flex items-center gap-1.5 self-start rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-2 no-underline shadow-card hover:text-ink">
+          <ArrowLeft size={13} aria-hidden /> Volver a mi cuenta
+        </Link>
+      )}
       {notice && (
         <div role="status" className="rounded-control bg-ok-bg px-4 py-3 text-sm font-semibold text-ok">
           {notice}

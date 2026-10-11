@@ -1,7 +1,7 @@
 import { ShieldOff } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
-import { findNavItem } from '@/components/layout/nav'
+import { allowedForRole, findNavItem } from '@/components/layout/nav'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/display'
 import { meets } from '@/lib/auth/access'
@@ -50,7 +50,7 @@ export function AppGate({ children }: { children: ReactNode }) {
 
   const item = findNavItem(pathname)
   if (me.context.ctx === 'platform' && item && !item.platform && !item.devOnly) {
-    return <Navigate to="/superadmin" replace />
+    return <Navigate to={homeFor(me)} replace />
   }
   if (me.context.ctx === 'staff' && item?.platform) return <Navigate to="/" replace />
   return <>{children}</>
@@ -60,6 +60,13 @@ export function AppGate({ children }: { children: ReactNode }) {
 export function ScreenGate({ path, children }: { path: string; children: ReactNode }) {
   const { me } = useAuth()
   const item = findNavItem(path)
+  if (me?.context.ctx === 'platform' && item && !allowedForRole(item, me.user.platformRole)) {
+    return (
+      <Card>
+        <EmptyState icon={ShieldOff} title="No tienes acceso a esta sección" description="Esta pantalla es solo para el super admin de la plataforma." />
+      </Card>
+    )
+  }
   if (me?.context.ctx === 'staff' && item?.requires && !meets(me, item.requires)) {
     return (
       <Card>

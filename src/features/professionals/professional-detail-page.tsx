@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { CircleAlert, Clock, MapPin, Phone, Scissors, UserX } from 'lucide-react'
+import { CircleAlert, Clock, MapPin, Phone, ConciergeBell, UserX } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { Avatar } from '@/components/ui/avatar'
 import { Tag } from '@/components/ui/badges'
@@ -170,7 +170,7 @@ export function ProfessionalDetailPage() {
       {tab === 'servicios' && (
         <Card>
           <div className="mb-3 flex items-center gap-2">
-            <Scissors size={16} aria-hidden className="text-brand" />
+            <ConciergeBell size={16} aria-hidden className="text-brand" />
             <h3 className="m-0 text-md font-bold">Servicios que realiza</h3>
           </div>
           <ServicesForm key={p.id} professional={p} services={catalog} canEdit={canManageProfile} />

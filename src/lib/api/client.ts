@@ -38,12 +38,15 @@ export class ApiError extends Error {
 export interface TokenResponse {
   accessToken: string
   expiresIn: number
-  context: { ctx: 'account' | 'staff' | 'platform'; organizationId?: string; membershipId?: string }
+  context: { ctx: 'account' | 'staff' | 'platform'; organizationId?: string; membershipId?: string; supportView?: boolean }
 }
 
 let accessToken: string | null = null
 let refreshing: Promise<TokenResponse | null> | null = null
 let onSessionLost: (() => void) | null = null
+// Vista de soporte: el token es de solo lectura dentro de un negocio y no se renueva.
+let supportView = false
+let onSupportViewEnded: (() => void) | null = null
 
 export const tokenStore = {
   get: () => accessToken,
@@ -53,6 +56,13 @@ export const tokenStore = {
   /** Se llama cuando la sesión no se puede renovar (el front vuelve al login). */
   onSessionLost: (cb: () => void) => {
     onSessionLost = cb
+  },
+  setSupportView: (active: boolean) => {
+    supportView = active
+  },
+  /** Se llama cuando la vista de soporte vence (el agente vuelve a su panel). */
+  onSupportViewEnded: (cb: () => void) => {
+    onSupportViewEnded = cb
   },
 }
 
@@ -113,6 +123,12 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     res = await send()
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', 'No hay conexión con el servidor.')
+  }
+
+  if (res.status === 401 && supportView) {
+    supportView = false
+    onSupportViewEnded?.()
+    throw await parseError(res)
   }
 
   if (res.status === 401 && !skipRefresh && accessToken) {

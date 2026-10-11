@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api, refreshSession, tokenStore, type TokenResponse } from '../api/client'
 import type { Me } from '../api/types'
 
@@ -30,6 +30,10 @@ interface AuthContextValue {
   createOrganization: (input: CreateOrganizationInput) => Promise<Me>
   acceptInvitation: (input: { token: string; password: string; firstName?: string; lastName?: string }) => Promise<Me>
   reload: () => Promise<Me>
+  /** Equipo de plataforma: entra a un negocio en solo lectura para dar soporte. */
+  enterSupportView: (organizationId: string, ticketId?: string) => Promise<Me>
+  /** Vuelve al panel de plataforma. Devuelve a qué pantalla regresar. */
+  exitSupportView: () => Promise<string>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -63,8 +67,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loadMe, queryClient],
   )
 
+  /** A dónde vuelve el agente al salir de la vista de soporte. */
+  const supportReturnTo = useRef('/superadmin')
+
+  const exitSupportView = useCallback(async () => {
+    tokenStore.setSupportView(false)
+    const res = await refreshSession()
+    if (!res) {
+      clear()
+      return '/login'
+    }
+    queryClient.clear()
+    await loadMe()
+    return supportReturnTo.current
+  }, [clear, loadMe, queryClient])
+
   useEffect(() => {
     tokenStore.onSessionLost(clear)
+    tokenStore.onSupportViewEnded(() => void exitSupportView())
     let cancelled = false
     void refreshSession().then(async (res) => {
       if (cancelled) return
@@ -84,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [clear, loadMe])
+  }, [clear, loadMe, exitSupportView])
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -108,8 +128,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       acceptInvitation: async (input) =>
         startSession(await api<TokenResponse>('/auth/accept-invitation', { method: 'POST', body: input, skipRefresh: true })),
       reload: loadMe,
+      enterSupportView: async (organizationId, ticketId) => {
+        const res = await api<TokenResponse>(`/platform/support/organizations/${organizationId}/view`, { method: 'POST', body: { ticketId } })
+        supportReturnTo.current = ticketId ? `/superadmin/soporte/${ticketId}` : `/superadmin/negocios/${organizationId}`
+        tokenStore.setSupportView(true)
+        return startSession(res)
+      },
+      exitSupportView,
     }),
-    [status, me, startSession, clear, loadMe],
+    [status, me, startSession, clear, loadMe, exitSupportView],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

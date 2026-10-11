@@ -18,6 +18,7 @@ import { NewClientPage } from '@/features/clients/new-client-page'
 import { BookingPage } from '@/features/booking/booking-page'
 import { BookingSettingsPage } from '@/features/booking/booking-settings-page'
 import { ManageBookingPage } from '@/features/booking/manage-booking-page'
+import { PortalPage } from '@/features/portal/portal-page'
 import { PaymentsPage } from '@/features/payments/payments-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
 import { ReportsPage } from '@/features/reports/reports-page'
@@ -45,6 +46,14 @@ import { MemberPage } from '@/features/team/member-page'
 import { TeamPage } from '@/features/team/team-page'
 import { ServiceFormPage } from '@/features/services/service-form-page'
 import { ServicesPage } from '@/features/services/services-page'
+import { InquiriesPage } from '@/features/support/inquiries-page'
+import { InquiryPage } from '@/features/support/inquiry-page'
+import { NewTicketPage } from '@/features/support/new-ticket-page'
+import { PlatformSupportPage } from '@/features/support/platform-support-page'
+import { PlatformTeamPage } from '@/features/support/platform-team-page'
+import { PlatformTicketPage } from '@/features/support/platform-ticket-page'
+import { SupportPage } from '@/features/support/support-page'
+import { TicketPage } from '@/features/support/ticket-page'
 import { AppGate, PublicOnly, RequireSession, ScreenGate } from './guards'
 
 const SCREENS: Record<string, () => ReactNode> = {
@@ -52,6 +61,10 @@ const SCREENS: Record<string, () => ReactNode> = {
   '/design': () => <DesignPage />,
   '/superadmin': () => <SuperadminPage />,
   '/superadmin/planes': () => <PlansPage />,
+  '/superadmin/soporte': () => <PlatformSupportPage />,
+  '/superadmin/equipo': () => <PlatformTeamPage />,
+  '/soporte': () => <SupportPage />,
+  '/consultas': () => <InquiriesPage />,
   '/servicios': () => <ServicesPage />,
   '/profesionales': () => <ProfessionalsPage />,
   '/disponibilidad': () => <AvailabilityPage />,
@@ -87,6 +100,10 @@ const DETAIL_ROUTES: Array<[path: string, parent: string, element: ReactNode]> =
   ['/recursos/:id', '/recursos', <ResourceFormPage />],
   ['/superadmin/negocios/:id', '/superadmin', <OrganizationDetailPage />],
   ['/equipo/:id', '/equipo', <MemberPage />],
+  ['/soporte/nuevo', '/soporte', <NewTicketPage />],
+  ['/consultas/:id', '/consultas', <InquiryPage />],
+  ['/soporte/:id', '/soporte', <TicketPage />],
+  ['/superadmin/soporte/:id', '/superadmin/soporte', <PlatformTicketPage />],
 ]
 
 export const router = createBrowserRouter([
@@ -107,6 +124,7 @@ export const router = createBrowserRouter([
   { path: '/inicio', element: <LandingPage /> },
   // Páginas del cliente final (sin cuenta).
   { path: '/reservar/:slug', element: <BookingPage /> },
+  { path: '/reservar/:slug/mi-cuenta', element: <PortalPage /> },
   { path: '/reserva/:token', element: <ManageBookingPage /> },
   {
     element: <RequireSession />,

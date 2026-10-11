@@ -1,4 +1,4 @@
-import { CalendarPlus, Cake, IdCard, Mail, MessageCircle, Phone, UserX } from 'lucide-react'
+import { CalendarPlus, Cake, IdCard, Mail, MessageCircle, Phone, UserX, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { Avatar } from '@/components/ui/avatar'
@@ -17,8 +17,9 @@ import { usePageMeta } from '@/lib/page-meta'
 import { formatTime } from '@/lib/time'
 import { ageFrom, CHANNEL_LABELS, formatDate, formatPhone, fullName, useClient, useUpdateClient } from './api'
 import { ClientForm } from './client-form'
+import { ClientFamilyTab, useClientFamily } from './family-tab'
 
-const TABS = ['citas', 'fichas', 'datos'] as const
+const TABS = ['citas', 'fichas', 'familia', 'datos'] as const
 type Tab = (typeof TABS)[number]
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'bad' }) {
@@ -72,6 +73,7 @@ export function ClientDetailPage() {
   const update = useUpdateClient(id ?? '')
   const showRecords = can('client_record.read') && hasFeature('client_records')
   const tab = useTab<Tab>(TABS, 'citas')
+  const family = useClientFamily(id).data
 
   const c = client.data
   usePageMeta(c ? { title: fullName(c), crumb: `Clientes / ${fullName(c)}` } : null)
@@ -130,6 +132,14 @@ export function ClientDetailPage() {
               {c.email && <Contact icon={Mail}>{c.email}</Contact>}
               {age !== null && <Contact icon={Cake}>{age} años</Contact>}
               {c.documentId && <Contact icon={IdCard}>{c.documentId}</Contact>}
+              {family?.guardian && (
+                <Contact icon={Users}>
+                  A cargo de{' '}
+                  <Link to={`/clientes/${family.guardian.id}`} className="font-semibold text-ink-2 hover:underline">
+                    {fullName(family.guardian)}
+                  </Link>
+                </Contact>
+              )}
             </div>
             <div className="mt-1 text-xs text-muted">
               Prefiere {CHANNEL_LABELS[c.preferredChannel ?? 'whatsapp']}
@@ -181,6 +191,11 @@ export function ClientDetailPage() {
             badge: upcoming.length ? <span className="rounded-full bg-teal-soft px-1.5 text-2xs text-teal-ink">{upcoming.length}</span> : undefined,
           },
           ...(showRecords ? [{ value: 'fichas' as const, label: 'Fichas clínicas' }] : []),
+          {
+            value: 'familia',
+            label: 'Familia',
+            badge: family?.dependents.length ? <span className="rounded-full bg-teal-soft px-1.5 text-2xs text-teal-ink">{family.dependents.length}</span> : undefined,
+          },
           { value: 'datos', label: 'Datos' },
         ]}
       />
@@ -202,6 +217,8 @@ export function ClientDetailPage() {
         ))}
 
       {current === 'fichas' && <RecordsTab clientId={c.id} appointments={[...upcoming, ...past]} />}
+
+      {current === 'familia' && <ClientFamilyTab client={c} canEdit={!readOnly && can('client.update')} enabled={hasFeature('guardians')} />}
 
       {current === 'datos' && (
         <Card>

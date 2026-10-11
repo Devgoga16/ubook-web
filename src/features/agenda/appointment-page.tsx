@@ -15,7 +15,7 @@ import {
   Receipt,
   RefreshCw,
   Repeat,
-  Scissors,
+  ConciergeBell,
   User,
   UserRoundX,
   Users,
@@ -420,7 +420,7 @@ export function AppointmentPage() {
             <h2 className="m-0 mt-1.5 text-2xl font-semibold">{name}</h2>
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-2">
               <span className="flex items-center gap-1.5">
-                <Scissors size={14} className="text-muted" aria-hidden /> {a.serviceName}
+                <ConciergeBell size={14} className="text-muted" aria-hidden /> {a.serviceName}
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar size={14} className="text-muted" aria-hidden /> {formatLongDate(date)} · {formatTime(a.startsAt)} – {formatTime(a.endsAt)}
@@ -509,7 +509,7 @@ export function AppointmentPage() {
             ) : (
               <DefinitionList
                 items={[
-                  { icon: Scissors, label: 'Servicio', value: `${a.serviceName} · ${a.durationMinutes} min` },
+                  { icon: ConciergeBell, label: 'Servicio', value: `${a.serviceName} · ${a.durationMinutes} min` },
                   { icon: User, label: 'Profesional', value: pro?.displayName ?? '—' },
                   { icon: Calendar, label: 'Fecha', value: formatLongDate(date) },
                   { icon: Clock, label: 'Hora', value: `${formatTime(a.startsAt)} – ${formatTime(a.endsAt)}` },

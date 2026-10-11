@@ -11,7 +11,7 @@ import {
   Phone,
   Plus,
   RefreshCw,
-  Scissors,
+  ConciergeBell,
   Sparkles,
   User,
   Users,
@@ -353,7 +353,7 @@ export function DesignPage() {
             items={[
               { icon: Phone, label: 'Celular', value: '+51 987 654 321' },
               { icon: Mail, label: 'Email', value: 'mateo.huaman@correo.pe' },
-              { icon: Scissors, label: 'Servicio', value: 'Corte + barba' },
+              { icon: ConciergeBell, label: 'Servicio', value: 'Corte + barba' },
             ]}
           />
           <div className="flex flex-col gap-1.5">
@@ -437,7 +437,7 @@ export function DesignPage() {
         <DefinitionList
           className="border-t border-line pt-3.5"
           items={[
-            { icon: Scissors, label: 'Servicio', value: 'Corte + barba + cejas' },
+            { icon: ConciergeBell, label: 'Servicio', value: 'Corte + barba + cejas' },
             { icon: User, label: 'Profesional', value: 'Luis Paredes' },
             { icon: Calendar, label: 'Fecha', value: 'Martes 6 oct · 15:00 – 16:00' },
           ]}

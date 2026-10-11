@@ -16,6 +16,7 @@ import { usePlans } from '@/features/auth/plans'
 import { PaymentRow } from '@/features/billing/platform-payments'
 import type { SubscriptionPayment } from '@/features/billing/api'
 import { formatDate } from '@/features/clients/api'
+import { SupportViewButton } from '@/features/support/support-view'
 import { api, errorMessage } from '@/lib/api/client'
 import type { SubscriptionStatus } from '@/lib/api/types'
 import { useAuth } from '@/lib/auth/auth-context'
@@ -460,6 +461,7 @@ export function OrganizationDetailPage() {
             </a>
           </div>
         </div>
+        <SupportViewButton organizationId={d.organization.id} organizationName={d.organization.name} />
         {canEdit &&
           (d.organization.status === 'active' ? (
             <Button variant="danger" disabled={status.isPending} onClick={() => window.confirm(`¿Suspender ${d.organization.name}? No podrá usar uBook hasta reactivarlo.`) && status.mutate('suspended')}>

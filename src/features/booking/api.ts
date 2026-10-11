@@ -39,7 +39,10 @@ export interface BookingInput {
   serviceId: string
   professionalId?: string
   startsAt: string
-  client: { firstName: string; lastName: string; phone: string; email?: string }
+  /** Sin sesión: los datos de quien reserva. */
+  client?: { firstName: string; lastName: string; phone: string; email?: string }
+  /** Con sesión en el portal: la persona para quien es la cita. */
+  forClientId?: string
   notes?: string
   acceptsTerms: boolean
   marketingConsent?: boolean
@@ -50,8 +53,12 @@ export interface BookingInput {
 export function useCreateBooking(slug: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: BookingInput) => publicApi<{ token: string; booking: PublicBookingView }>(`/businesses/${slug}/bookings`, { method: 'POST', body }),
-    onSettled: () => qc.invalidateQueries({ queryKey: ['public', slug, 'slots'] }),
+    mutationFn: ({ portalToken, ...body }: BookingInput & { portalToken?: string | null }) =>
+      api<{ token: string; booking: PublicBookingView }>(`/public/businesses/${slug}/bookings`, { method: 'POST', body, skipRefresh: true, ...(portalToken && { headers: { 'x-portal-token': portalToken } }) }),
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['public', slug, 'slots'] })
+      void qc.invalidateQueries({ queryKey: ['portal', slug] })
+    },
   })
 }
 
@@ -78,6 +85,7 @@ export function useManageActions(token: string) {
   const qc = useQueryClient()
   const update = (view: PublicBookingView) => {
     qc.setQueryData(['public', 'booking', token], view)
+    void qc.invalidateQueries({ queryKey: ['portal'] })
     void qc.invalidateQueries({ queryKey: ['public', 'booking', token, 'slots'] })
   }
   return {

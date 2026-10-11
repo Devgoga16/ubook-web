@@ -1,4 +1,4 @@
-import { Clock, FolderCog, Plus, Scissors } from 'lucide-react'
+import { Clock, FolderCog, Plus, ConciergeBell } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { AvatarGroup } from '@/components/ui/avatar'
@@ -130,7 +130,7 @@ export function ServicesPage() {
       ) : list.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Scissors}
+            icon={ConciergeBell}
             title="Aún no tienes servicios"
             description="Agrega lo que ofreces, con su duración y precio. Es lo que tus clientes podrán reservar."
             action={
